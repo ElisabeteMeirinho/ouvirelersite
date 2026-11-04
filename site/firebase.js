@@ -4,7 +4,7 @@ import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gsta
 import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "COLE_AQUI_SUA_API_KEY",
+  apiKey: "AIzaSyDKRn1M5HvCRo9dtCWFP3adepUEe7lBbvg",
   authDomain: "ouvir-e-ler.firebaseapp.com",
   projectId: "ouvir-e-ler",
   storageBucket: "ouvir-e-ler.firebasestorage.app",
