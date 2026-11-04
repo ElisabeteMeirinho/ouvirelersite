@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Ouvir & Ler transforma conversas em grupo em texto identificado por pessoa, em tempo real." />
+  <title>Ouvir & Ler — A conversa chega até você</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="nav shell">
+    <a class="brand" href="#inicio" aria-label="Ouvir & Ler">
+      <img src="assets/logo-ouvir-e-ler.svg" alt="Ouvir & Ler" width="250" height="72">
+    </a>
+    <nav>
+      <a href="#como">Como funciona</a><a href="#acessibilidade">Acessibilidade</a><a href="#historia">Por que existe</a>
+    </nav>
+    <a class="btn ghost" href="#demo">Ver demonstração</a>
+  </header>
+
+  <main>
+    <section id="inicio" class="hero shell">
+      <div class="hero-copy">
+        <span class="eyebrow">Tecnologia que aproxima</span>
+        <h1>Não é só ouvir.<br><em>É fazer parte da conversa.</em></h1>
+        <p>O Ouvir & Ler transforma a fala de cada pessoa em texto e organiza tudo como um chat, mostrando <strong>quem falou e o que disse</strong>. Criado para ajudar pessoas com deficiência auditiva parcial ou total a acompanhar conversas de um jeito mais natural.</p>
+        <div class="actions"><a class="btn primary" href="#demo">Experimentar o conceito</a><a class="btn link" href="#como">Entender como funciona →</a></div>
+        <div class="trust"><span>● Transcrição em tempo real</span><span>● Cada celular identifica seu participante</span><span>● IA melhora a leitura sem mudar o sentido</span></div>
+      </div>
+      <div class="phone-stage" aria-label="Demonstração do aplicativo">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="phone">
+          <div class="phone-top"></div>
+          <div class="app-head"><div><small>Sala</small><strong>Almoço de domingo</strong></div><span class="live">● AO VIVO</span></div>
+          <div class="people"><span>EM</span><span>CM</span><span>AM</span><span class="more">+2</span></div>
+          <div class="chat">
+            <article class="bubble"><div class="avatar a1">C</div><div><b>Charles</b><p>A gente pode pedir a sobremesa depois do almoço.</p><time>13:08</time></div></article>
+            <article class="bubble"><div class="avatar a2">M</div><div><b>Márcia</b><p>Eu trouxe aquele bolo que você gosta.</p><time>13:08</time></div></article>
+            <article class="bubble ai"><div class="avatar a3">A</div><div><b>Ana</b><p>Acho melhor deixar o café para depois, porque ainda estamos terminando.</p><span>✨ texto ajustado para leitura</span></div></article>
+          </div>
+          <div class="listen-bar"><span class="pulse"></span><div><b>Ouvindo a conversa…</b><small>3 pessoas falando na sala</small></div><button>AA</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="como" class="section shell">
+      <span class="eyebrow">Como funciona</span><h2>Uma sala. Vários celulares.<br>Uma conversa que ninguém precisa perder.</h2>
+      <div class="steps">
+        <article><span>01</span><div class="step-icon">⌁</div><h3>Crie uma sala</h3><p>Uma pessoa cria a conversa e compartilha o código ou QR Code com quem está por perto.</p></article>
+        <article><span>02</span><div class="step-icon">◉</div><h3>Cada pessoa entra com seu nome</h3><p>O celular de quem fala identifica a origem da mensagem. Assim, o app mostra com segurança quem disse cada frase.</p></article>
+        <article><span>03</span><div class="step-icon">Aa</div><h3>Quem precisa, lê</h3><p>O modo Ouvinte recebe tudo como um chat em tempo real, com fonte ajustável, contraste e organização por participante.</p></article>
+        <article><span>04</span><div class="step-icon">✦</div><h3>A IA deixa mais claro</h3><p>A IA corrige pontuação e falhas de transcrição usando o contexto, sem transformar a fala em outra coisa.</p></article>
+      </div>
+    </section>
+
+    <section id="demo" class="demo-section">
+      <div class="shell demo-grid">
+        <div><span class="eyebrow">Dois modos</span><h2>Hoje eu quero falar.<br>Amanhã, posso só acompanhar.</h2><p>Cada celular pode alternar entre os modos a qualquer momento. O participante que fala usa o microfone; quem acompanha recebe a conversa já organizada.</p>
+          <div class="mode-switch"><button class="mode active" data-mode="listener">👁 Modo Ouvinte</button><button class="mode" data-mode="speaker">◉ Vou falar</button></div>
+          <div class="mode-description" id="modeText">Você acompanha todas as falas em um chat grande e legível. Pode aumentar a fonte, destacar a última fala e fixar a tela ativa.</div>
+        </div>
+        <div class="room-card">
+          <div class="room-top"><span class="room-code">SALA · 583 214</span><span class="connected">● 4 conectados</span></div>
+          <h3>Almoço em família</h3>
+          <div class="mini-chat" id="miniChat"></div>
+          <div class="composer"><span>◉</span><div><b id="statusTitle">Acompanhando conversa</b><small id="statusSub">As falas aparecem automaticamente</small></div><button id="talkButton">Alternar</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="acessibilidade" class="section shell accessibility">
+      <div><span class="eyebrow">Acessibilidade primeiro</span><h2>Projetado para reduzir esforço, não para criar mais uma distração.</h2></div>
+      <div class="features">
+        <article><b>AA</b><h3>Texto do seu jeito</h3><p>Tamanho de fonte, espaçamento e contraste ajustáveis.</p></article>
+        <article><b>◎</b><h3>Foco na última fala</h3><p>A mensagem mais recente pode ganhar destaque automático.</p></article>
+        <article><b>⌁</b><h3>Contexto visual</h3><p>Nome, horário e participante deixam a conversa fácil de acompanhar.</p></article>
+        <article><b>✦</b><h3>IA cuidadosa</h3><p>Melhora clareza e pontuação, preservando o significado original.</p></article>
+      </div>
+    </section>
+
+    <section id="historia" class="story">
+      <div class="shell story-grid">
+        <div class="quote-mark">“</div>
+        <div><span class="eyebrow">Por que existe</span><h2>Porque estar na mesa não deveria significar ficar de fora da conversa.</h2><p>O Ouvir & Ler nasceu da observação de uma dificuldade simples e muito humana: em uma mesa com várias pessoas, acompanhar todas as vozes pode ser cansativo ou até impossível para alguém com perda auditiva.</p><p>A proposta é fazer a tecnologia desaparecer no fundo e deixar a pessoa voltar para o centro da conversa — entendendo a piada, acompanhando a história e podendo responder no momento certo.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="shell footer"><div class="brand footer-brand"><img src="assets/logo-ouvir-e-ler.svg" alt="Ouvir & Ler" width="250" height="72"></div><p>Um projeto de tecnologia assistiva pensado para aproximar pessoas.</p></div></footer>
+  <script src="script.js"></script>
+</body>
+</html>

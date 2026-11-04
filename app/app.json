@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Ouvir & Ler",
+    "slug": "ouvir-e-ler",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "O Ouvir & Ler usa o microfone para transcrever a sua fala para os participantes da conversa."
+      }
+    },
+    "android": {
+      "permissions": [
+        "RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ],
+      "package": "com.elisabetemeirinho.ouvireler"
+    },
+    "plugins": [
+      "expo-audio",
+      "expo-asset"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f7f46ca0-e587-4bda-aef3-9b7cf8b23522"
+      }
+    }
+  }
+}
