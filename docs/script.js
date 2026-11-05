@@ -13,3 +13,12 @@ document.querySelectorAll('.mode').forEach(btn=>btn.addEventListener('click',()=
  statusTitle.textContent=speaker?'Microfone pronto':'Acompanhando conversa';statusSub.textContent=speaker?'Toque para começar a falar':'As falas aparecem automaticamente';
 }));
 document.querySelector('#talkButton').addEventListener('click',()=>document.querySelector('.mode:not(.active)').click());
+import { auth, signInAnonymously } from "./firebase.js";
+
+signInAnonymously(auth)
+  .then(() => {
+    console.log("Ouvir & Ler conectado ao Firebase!");
+  })
+  .catch((error) => {
+    console.error("Erro na autenticação:", error);
+  });
