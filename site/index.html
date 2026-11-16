@@ -15,7 +15,7 @@
     <nav>
       <a href="#como">Como funciona</a><a href="#acessibilidade">Acessibilidade</a><a href="#historia">Por que existe</a>
     </nav>
-    <a class="btn ghost" href="#demo">Ver demonstração</a>
+    <a class="btn ghost" href="#sala">Entrar na conversa</a>
   </header>
 
   <main>
@@ -24,7 +24,7 @@
         <span class="eyebrow">Tecnologia que aproxima</span>
         <h1>Não é só ouvir.<br><em>É fazer parte da conversa.</em></h1>
         <p>O Ouvir & Ler transforma a fala de cada pessoa em texto e organiza tudo como um chat, mostrando <strong>quem falou e o que disse</strong>. Criado para ajudar pessoas com deficiência auditiva parcial ou total a acompanhar conversas de um jeito mais natural.</p>
-        <div class="actions"><a class="btn primary" href="#demo">Experimentar o conceito</a><a class="btn link" href="#como">Entender como funciona →</a></div>
+        <div class="actions"><a class="btn primary" href="#sala">Entrar na conversa</a><a class="btn link" href="#como">Entender como funciona →</a></div>
         <div class="trust"><span>● Transcrição em tempo real</span><span>● Cada celular identifica seu participante</span><span>● IA melhora a leitura sem mudar o sentido</span></div>
       </div>
       <div class="phone-stage" aria-label="Demonstração do aplicativo">
@@ -65,6 +65,73 @@
           <div class="mini-chat" id="miniChat"></div>
           <div class="composer"><span>◉</span><div><b id="statusTitle">Acompanhando conversa</b><small id="statusSub">As falas aparecem automaticamente</small></div><button id="talkButton">Alternar</button></div>
         </div>
+      </div>
+    </section>
+
+
+    <section id="sala" class="section shell live-room-section">
+      <div class="room-intro">
+        <span class="eyebrow">Sua conversa, de verdade</span>
+        <h2>Uma mesa. Todas as vozes.</h2>
+        <p>Entre com seu nome e use um código para acompanhar a conversa. Não é necessário criar uma conta.</p>
+      </div>
+
+      <div class="live-room-card">
+        <div id="roomEntry">
+          <div class="room-entry-grid">
+            <div class="room-entry-fields">
+              <label for="participantName">Como podemos chamar você?</label>
+              <input id="participantName" type="text" maxlength="40" autocomplete="name" placeholder="Seu nome" />
+              <label for="newRoomName">Nome da conversa</label>
+              <input id="newRoomName" type="text" maxlength="60" value="Conversa em família" />
+              <button id="createRoomBtn" class="btn primary room-action" type="button">Criar uma sala</button>
+            </div>
+            <div class="room-join-fields">
+              <span class="join-divider">ou entre em uma sala existente</span>
+              <label for="roomCodeInput">Código da sala</label>
+              <input id="roomCodeInput" type="text" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="Ex.: ABCD7K2M" />
+              <button id="joinRoomBtn" class="btn room-secondary-action" type="button">Entrar com código</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="activeRoomPanel" class="active-room-panel" hidden>
+          <div class="active-room-header">
+            <div>
+              <span class="room-kicker">CONVERSA ATIVA</span>
+              <h3 id="activeRoomTitle">Conversa em família</h3>
+              <p class="room-code-line">Código: <strong id="activeRoomCode"></strong></p>
+            </div>
+            <div class="active-room-actions">
+              <button id="copyInviteBtn" class="small-room-button" type="button">Copiar convite</button>
+              <button id="leaveRoomBtn" class="small-room-button subtle" type="button">Sair da sala</button>
+            </div>
+          </div>
+
+          <div class="room-participant-bar">
+            <span id="participantCount">1 pessoa na sala</span>
+            <div class="room-mode-switch" role="group" aria-label="Modo de participação">
+              <button class="room-mode-btn active" data-room-mode="ouvinte" type="button">Acompanhar</button>
+              <button class="room-mode-btn" data-room-mode="falante" type="button">Vou falar</button>
+            </div>
+          </div>
+
+          <div id="roomMessages" class="room-messages" aria-live="polite" aria-relevant="additions text">
+            <p class="empty-room-message">A conversa ainda não começou. Quando alguém enviar uma mensagem, ela aparecerá aqui.</p>
+          </div>
+
+          <form id="messageForm" class="room-message-form">
+            <label class="sr-only" for="messageInput">Digite sua mensagem</label>
+            <textarea id="messageInput" maxlength="1500" rows="2" placeholder="Escreva uma mensagem para a sala…"></textarea>
+            <div class="room-message-actions">
+              <button id="voiceButton" class="btn room-secondary-action" type="button" hidden>Falar</button>
+              <button class="btn primary" type="submit">Enviar mensagem</button>
+            </div>
+          </form>
+          <p class="voice-disclaimer">O ditado usa o reconhecimento de fala disponível no navegador. A disponibilidade varia por dispositivo e navegador; você também pode digitar.</p>
+        </div>
+
+        <p id="roomFeedback" class="room-feedback" role="status" aria-live="polite">Conectando ao serviço de conversas…</p>
       </div>
     </section>
 
