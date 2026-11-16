@@ -205,7 +205,7 @@ function openRoom(roomId, roomData, user, name, mode) {
   stopParticipantsListener = onSnapshot(
     collection(db, "salas", roomId, "participantes"),
     (snapshot) => {
-      const count = snapshot.size;
+      const count = snapshot.docs.filter((participant) => participant.data().modo !== "offline").length;
       if (participantCount) participantCount.textContent = count === 1 ? "1 pessoa na sala" : count + " pessoas na sala";
     },
     (error) => {
@@ -238,15 +238,8 @@ async function createRoom() {
   setRoomFeedback("Criando sua sala…");
   try {
     const user = await firebaseReady;
-    let roomId = randomRoomCode();
-    let roomRef = doc(db, "salas", roomId);
-    let attempts = 0;
-    while ((await getDoc(roomRef)).exists() && attempts < 5) {
-      roomId = randomRoomCode();
-      roomRef = doc(db, "salas", roomId);
-      attempts += 1;
-    }
-    if ((await getDoc(roomRef)).exists()) throw new Error("Não foi possível gerar um código livre. Tente novamente.");
+    const roomId = randomRoomCode();
+    const roomRef = doc(db, "salas", roomId);
 
     const roomData = { nome: title, status: "ativa", ownerUid: user.uid, criadoEm: serverTimestamp() };
     await setDoc(roomRef, roomData);
