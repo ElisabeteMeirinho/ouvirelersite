@@ -275,7 +275,7 @@ async function joinRoom() {
   setRoomFeedback("Procurando a sala…");
   try {
     const user = await firebaseReady;
-    const candidates = Array.from(new Set([enteredCode, enteredCode.toUpperCase()]));
+    const candidates = Array.from(new Set([enteredCode, enteredCode.toUpperCase(), enteredCode.toLowerCase()]));
     let roomSnapshot = null;
     let roomId = null;
     for (const candidate of candidates) {
