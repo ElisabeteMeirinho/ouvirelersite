@@ -18,7 +18,7 @@ service cloud.firestore {
 
     match /salas/{roomId} {
       // O código aleatório é o convite; não permitimos listar as salas.
-      allow get: if signedIn() && resource.data.status == 'ativa';
+      allow get: if signedIn() && (!exists(/databases/$(database)/documents/salas/$(roomId)) || resource.data.status == 'ativa');
       allow list: if false;
 
       allow create: if signedIn()
