@@ -1,0 +1,90 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function activeRoom(roomId) {
+      return exists(/databases/$(database)/documents/salas/$(roomId))
+        && get(/databases/$(database)/documents/salas/$(roomId)).data.status == 'ativa';
+    }
+
+    function isMember(roomId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/salas/$(roomId)/participantes/$(request.auth.uid));
+    }
+
+    match /salas/{roomId} {
+      // O código aleatório é o convite; não permitimos listar as salas.
+      allow get: if signedIn() && resource.data.status == 'ativa';
+      allow list: if false;
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['nome', 'status', 'ownerUid', 'criadoEm'])
+        && request.resource.data.keys().hasAll(['nome', 'status', 'ownerUid', 'criadoEm'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() >= 2
+        && request.resource.data.nome.size() <= 60
+        && request.resource.data.status == 'ativa'
+        && request.resource.data.criadoEm == request.time;
+
+      allow update: if signedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status == 'encerrada';
+
+      allow delete: if false;
+
+      match /participantes/{uid} {
+        // O usuário pode consultar o próprio registro ao entrar; demais membros
+        // só ficam visíveis depois que a pessoa já pertence à sala.
+        allow get: if signedIn()
+          && ((request.auth.uid == uid && activeRoom(roomId)) || isMember(roomId));
+        allow list: if isMember(roomId);
+
+        allow create: if signedIn()
+          && request.auth.uid == uid
+          && activeRoom(roomId)
+          && request.resource.data.keys().hasOnly(['nome', 'modo', 'entrouEm', 'ultimoAcesso'])
+          && request.resource.data.keys().hasAll(['nome', 'modo', 'entrouEm', 'ultimoAcesso'])
+          && request.resource.data.nome is string
+          && request.resource.data.nome.size() >= 1
+          && request.resource.data.nome.size() <= 40
+          && request.resource.data.modo in ['ouvinte', 'falante']
+          && request.resource.data.entrouEm == request.time
+          && request.resource.data.ultimoAcesso == request.time;
+
+        allow update: if signedIn()
+          && request.auth.uid == uid
+          && isMember(roomId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nome', 'modo', 'ultimoAcesso'])
+          && request.resource.data.nome is string
+          && request.resource.data.nome.size() >= 1
+          && request.resource.data.nome.size() <= 40
+          && request.resource.data.modo in ['ouvinte', 'falante', 'offline']
+          && request.resource.data.ultimoAcesso == request.time;
+
+        allow delete: if signedIn() && request.auth.uid == uid && isMember(roomId);
+      }
+
+      match /mensagens/{messageId} {
+        allow read: if isMember(roomId);
+
+        allow create: if isMember(roomId)
+          && request.resource.data.keys().hasOnly(['participanteId', 'participante', 'texto', 'criadoEm'])
+          && request.resource.data.keys().hasAll(['participanteId', 'participante', 'texto', 'criadoEm'])
+          && request.resource.data.participanteId == request.auth.uid
+          && request.resource.data.participante == get(/databases/$(database)/documents/salas/$(roomId)/participantes/$(request.auth.uid)).data.nome
+          && request.resource.data.texto is string
+          && request.resource.data.texto.size() >= 1
+          && request.resource.data.texto.size() <= 1500
+          && request.resource.data.criadoEm == request.time;
+
+        allow update, delete: if false;
+      }
+    }
+  }
+}
