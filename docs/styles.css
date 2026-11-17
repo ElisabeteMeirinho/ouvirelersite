@@ -53,3 +53,11 @@ header .brand img{display:block;width:250px;max-width:32vw;height:auto}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 button:focus-visible,a:focus-visible{outline:3px solid #b98b7e;outline-offset:3px}
 @media(max-width:700px){.room-entry-grid{grid-template-columns:1fr}.active-room-header,.room-participant-bar{align-items:stretch;flex-direction:column}.active-room-actions{justify-content:flex-start}.room-message-actions{justify-content:stretch}.room-message-actions .btn{flex:1}}
+
+
+/* Proveniência e conferência de transcrições */
+.original-transcript{margin-top:10px;padding:9px 11px;border-radius:12px;background:#f6f0e7;color:var(--muted);font-size:12px}
+.original-transcript summary{cursor:pointer;font-weight:800;color:var(--wine)}
+.original-transcript p{margin:7px 0 0;font-size:13px;line-height:1.5}
+.ai-transcript-note{display:inline-block;margin-top:8px;color:#64745a;font-size:11px;font-weight:800}
+.room-message-actions .btn:disabled{opacity:.6;cursor:wait}
