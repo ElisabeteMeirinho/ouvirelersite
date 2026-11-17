@@ -128,7 +128,7 @@
               <button class="btn primary" type="submit">Enviar mensagem</button>
             </div>
           </form>
-          <p class="voice-disclaimer">O ditado usa o reconhecimento de fala disponível no navegador. A disponibilidade varia por dispositivo e navegador; você também pode digitar.</p>
+          <p class="voice-disclaimer">Ao tocar em “Falar”, o áudio deste trecho é enviado ao serviço do Ouvir & Ler para transcrição pela OpenAI. Avise e obtenha a concordância das pessoas antes de gravar; você também pode digitar.</p>
         </div>
 
         <p id="roomFeedback" class="room-feedback" role="status" aria-live="polite">Conectando ao serviço de conversas…</p>
@@ -154,6 +154,7 @@
   </main>
 
   <footer><div class="shell footer"><div class="brand footer-brand"><img src="assets/logo-ouvir-e-ler.svg" alt="Ouvir & Ler" width="250" height="72"></div><p>Um projeto de tecnologia assistiva pensado para aproximar pessoas.</p></div></footer>
+  <script src="api-config.js"></script>
   <script type="module" src="script.js"></script>
 </body>
 </html>
