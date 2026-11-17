@@ -76,6 +76,8 @@ export async function sendRoomMessage(message: Omit<Message, 'id'>) {
     participanteId: user.uid,
     participante: participant.data().nome,
     texto: message.text.trim().slice(0, 1500),
+    textoOriginal: (message.rawText ?? message.text).trim().slice(0, 1500),
+    ajustadoPorIA: Boolean(message.aiAdjusted),
     criadoEm: serverTimestamp()
   });
 }
@@ -98,8 +100,9 @@ export function listenRoomMessages(roomId: string, onMessage: (message: Message)
         participantId: data.participanteId ?? '',
         participantName: data.participante ?? 'Participante',
         text: data.texto ?? '',
+        rawText: data.textoOriginal ?? data.texto ?? '',
         createdAt,
-        aiAdjusted: false
+        aiAdjusted: Boolean(data.ajustadoPorIA)
       });
     });
   });
