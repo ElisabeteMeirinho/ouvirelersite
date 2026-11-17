@@ -69,7 +69,12 @@ let currentRoom = null;
 let currentMode = "ouvinte";
 let stopMessagesListener = null;
 let stopParticipantsListener = null;
-let speechRecognition = null;
+const API_BASE_URL = String(window.OUVIR_API_URL || "").trim().replace(/\\/+$/, "");
+let mediaRecorder = null;
+let activeMediaStream = null;
+let recordedAudioChunks = [];
+let recordingTimeout = null;
+let transcriptionInProgress = false;
 
 function setRoomFeedback(message, state) {
   if (!roomFeedback) return;
@@ -156,6 +161,21 @@ function renderRoomMessages(snapshot) {
     const body = document.createElement("p");
     body.textContent = message.texto || "";
     content.append(meta, body);
+
+    if (message.ajustadoPorIA && message.textoOriginal && message.textoOriginal !== message.texto) {
+      const original = document.createElement("details");
+      original.className = "original-transcript";
+      const summary = document.createElement("summary");
+      summary.textContent = "Ver transcrição original";
+      const originalText = document.createElement("p");
+      originalText.textContent = message.textoOriginal;
+      original.append(summary, originalText);
+      content.appendChild(original);
+      const aiNote = document.createElement("span");
+      aiNote.className = "ai-transcript-note";
+      aiNote.textContent = "Texto revisado para leitura";
+      content.appendChild(aiNote);
+    }
     article.append(avatar, content);
     roomMessages.appendChild(article);
   });
@@ -302,13 +322,16 @@ async function joinRoom() {
   }
 }
 
-async function sendRoomMessage(text) {
+async function sendRoomMessage(text, rawText = text, adjusted = false) {
   if (!currentRoom || !text.trim()) return;
   const cleanText = text.trim().slice(0, 1500);
+  const cleanRawText = String(rawText || text).trim().slice(0, 1500);
   await addDoc(collection(db, "salas", currentRoom.id, "mensagens"), {
     participanteId: currentRoom.user.uid,
     participante: currentRoom.name,
     texto: cleanText,
+    textoOriginal: cleanRawText,
+    ajustadoPorIA: Boolean(adjusted),
     criadoEm: serverTimestamp()
   });
 }
@@ -374,51 +397,171 @@ messageForm?.addEventListener("submit", async (event) => {
   }
 });
 
-voiceButton?.addEventListener("click", () => {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    setRoomFeedback("Este navegador não oferece ditado por voz. Você ainda pode digitar sua mensagem.", "error");
+function recentConversationContext() {
+  if (!roomMessages) return "";
+  return Array.from(roomMessages.querySelectorAll(".live-message")).slice(-6).map((item) => {
+    const author = item.querySelector(".live-message-meta strong")?.textContent || "Participante";
+    const text = item.querySelector(".live-message-content > p")?.textContent || "";
+    return text ? `${author}: ${text}` : "";
+  }).filter(Boolean).join("\n").slice(-3000);
+}
+
+function chooseRecordingMimeType() {
+  const supported = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4",
+    "audio/ogg;codecs=opus"
+  ];
+  return supported.find((type) => window.MediaRecorder?.isTypeSupported?.(type)) || "";
+}
+
+function stopActiveMicrophone() {
+  if (recordingTimeout) window.clearTimeout(recordingTimeout);
+  recordingTimeout = null;
+  if (activeMediaStream) {
+    activeMediaStream.getTracks().forEach((track) => track.stop());
+    activeMediaStream = null;
+  }
+}
+
+async function transcribeAndSend(blob) {
+  if (!API_BASE_URL) {
+    setRoomFeedback("O serviço OpenAI ainda não foi ligado a este site. Falta configurar a URL da API do Render.", "error");
     return;
   }
-  if (speechRecognition) {
-    speechRecognition.stop();
-    return;
+
+  const formData = new FormData();
+  formData.append("context", recentConversationContext());
+  const fileName = blob.type.includes("mp4") ? "fala.m4a" : blob.type.includes("ogg") ? "fala.ogg" : "fala.webm";
+  formData.append("audio", blob, fileName);
+
+  transcriptionInProgress = true;
+  if (voiceButton) {
+    voiceButton.disabled = true;
+    voiceButton.textContent = "Transcrevendo…";
   }
-  speechRecognition = new SpeechRecognition();
-  speechRecognition.lang = "pt-BR";
-  speechRecognition.continuous = false;
-  speechRecognition.interimResults = false;
-  voiceButton.disabled = true;
-  voiceButton.textContent = "Ouvindo…";
-  setRoomFeedback("Pode falar. O navegador vai transformar sua fala em texto.");
-  speechRecognition.onresult = async (event) => {
-    const transcript = event.results?.[0]?.[0]?.transcript || "";
-    if (transcript) {
-      try {
-        await sendRoomMessage(transcript);
-        setRoomFeedback("Fala enviada para a conversa.", "success");
-      } catch (error) {
-        console.error("Erro ao enviar a fala:", error);
-        setRoomFeedback("A fala foi reconhecida, mas não foi possível enviá-la. Confira a conexão e as regras.", "error");
-      }
-    }
-  };
-  speechRecognition.onerror = (event) => {
-    setRoomFeedback("Não foi possível reconhecer a fala (" + event.error + "). Você pode tentar novamente ou digitar.", "error");
-  };
-  speechRecognition.onend = () => {
-    speechRecognition = null;
-    voiceButton.disabled = false;
-    voiceButton.textContent = "Falar";
-  };
+  setRoomFeedback("A OpenAI está transcrevendo sua fala e verificando o contexto da conversa…");
+
   try {
-    speechRecognition.start();
+    const response = await fetch(`${API_BASE_URL}/transcribe`, {
+      method: "POST",
+      body: formData
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || `Serviço de transcrição indisponível (${response.status}).`);
+    if (!result.text) {
+      setRoomFeedback("Não identifiquei fala suficiente nesse trecho. Tente falar um pouco mais perto do microfone.", "error");
+      return;
+    }
+
+    await sendRoomMessage(result.text, result.rawText || result.text, Boolean(result.adjusted));
+    setRoomFeedback(
+      result.adjusted
+        ? "Fala transcrita e revisada com o contexto. A transcrição original continua disponível na mensagem."
+        : "Fala transcrita e enviada para a conversa.",
+      "success"
+    );
   } catch (error) {
-    speechRecognition = null;
-    voiceButton.disabled = false;
-    voiceButton.textContent = "Falar";
-    setRoomFeedback("Não foi possível iniciar o microfone. Verifique a permissão do navegador.", "error");
+    console.error("Erro ao transcrever áudio:", error);
+    setRoomFeedback(error.message || "Não foi possível transcrever o áudio. Tente novamente.", "error");
+  } finally {
+    transcriptionInProgress = false;
+    if (voiceButton) {
+      voiceButton.disabled = false;
+      voiceButton.textContent = "Falar";
+    }
   }
+}
+
+async function startVoiceCapture() {
+  if (!currentRoom || transcriptionInProgress || mediaRecorder) return;
+  if (!API_BASE_URL) {
+    setRoomFeedback("O serviço OpenAI ainda não foi ligado a este site. Falta configurar a URL pública da API no arquivo api-config.js.", "error");
+    return;
+  }
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    setRoomFeedback("Este navegador não oferece gravação de áudio compatível. Atualize o navegador ou use o aplicativo Android.", "error");
+    return;
+  }
+
+  try {
+    activeMediaStream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+    });
+    const mimeType = chooseRecordingMimeType();
+    mediaRecorder = new MediaRecorder(activeMediaStream, mimeType ? { mimeType } : undefined);
+    recordedAudioChunks = [];
+
+    mediaRecorder.addEventListener("dataavailable", (event) => {
+      if (event.data && event.data.size > 0) recordedAudioChunks.push(event.data);
+    });
+
+    mediaRecorder.addEventListener("error", () => {
+      stopActiveMicrophone();
+      mediaRecorder = null;
+      if (voiceButton) {
+        voiceButton.disabled = false;
+        voiceButton.textContent = "Falar";
+      }
+      setRoomFeedback("O navegador encontrou um erro ao gravar. Confira a permissão do microfone e tente novamente.", "error");
+    }, { once: true });
+
+    mediaRecorder.addEventListener("stop", async () => {
+      const blob = new Blob(recordedAudioChunks, { type: mimeType || "audio/webm" });
+      recordedAudioChunks = [];
+      mediaRecorder = null;
+      stopActiveMicrophone();
+      if (voiceButton) {
+        voiceButton.disabled = true;
+        voiceButton.textContent = "Transcrevendo…";
+      }
+      if (!blob.size) {
+        if (voiceButton) {
+          voiceButton.disabled = false;
+          voiceButton.textContent = "Falar";
+        }
+        setRoomFeedback("A gravação ficou vazia. Tente novamente e fale próximo ao microfone.", "error");
+        return;
+      }
+      await transcribeAndSend(blob);
+    }, { once: true });
+
+    mediaRecorder.start(1000);
+    if (voiceButton) voiceButton.textContent = "Parar e enviar";
+    setRoomFeedback("Gravando sua fala. Toque em “Parar e enviar” quando terminar. O áudio será enviado para transcrição.");
+    recordingTimeout = window.setTimeout(() => {
+      if (mediaRecorder?.state === "recording") {
+        setRoomFeedback("Limite de gravação atingido. Enviando este trecho para transcrição…");
+        mediaRecorder.stop();
+      }
+    }, 45000);
+  } catch (error) {
+    stopActiveMicrophone();
+    mediaRecorder = null;
+    if (voiceButton) voiceButton.textContent = "Falar";
+    setRoomFeedback(error.name === "NotAllowedError"
+      ? "Permita o acesso ao microfone nas configurações do navegador para usar a transcrição."
+      : "Não foi possível iniciar o microfone. Tente novamente.", "error");
+  }
+}
+
+function stopVoiceCapture() {
+  if (recordingTimeout) window.clearTimeout(recordingTimeout);
+  recordingTimeout = null;
+  if (mediaRecorder?.state === "recording") {
+    if (voiceButton) {
+      voiceButton.disabled = true;
+      voiceButton.textContent = "Enviando…";
+    }
+    setRoomFeedback("Finalizando a gravação e enviando o áudio para transcrição…");
+    mediaRecorder.stop();
+  }
+}
+
+voiceButton?.addEventListener("click", () => {
+  if (mediaRecorder?.state === "recording") stopVoiceCapture();
+  else startVoiceCapture();
 });
 
 copyInviteButton?.addEventListener("click", async () => {
@@ -441,4 +584,8 @@ if (sharedCode && roomCodeInput) {
   document.querySelector("#sala")?.scrollIntoView({ behavior: "smooth" });
 }
 
-window.addEventListener("pagehide", stopRoomListeners);
+window.addEventListener("pagehide", () => {
+  if (mediaRecorder?.state === "recording") mediaRecorder.stop();
+  stopActiveMicrophone();
+  stopRoomListeners();
+});
