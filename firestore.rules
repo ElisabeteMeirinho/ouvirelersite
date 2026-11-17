@@ -74,13 +74,15 @@ service cloud.firestore {
         allow read: if isMember(roomId);
 
         allow create: if isMember(roomId)
-          && request.resource.data.keys().hasOnly(['participanteId', 'participante', 'texto', 'criadoEm'])
+          && request.resource.data.keys().hasOnly(['participanteId', 'participante', 'texto', 'textoOriginal', 'ajustadoPorIA', 'criadoEm'])
           && request.resource.data.keys().hasAll(['participanteId', 'participante', 'texto', 'criadoEm'])
           && request.resource.data.participanteId == request.auth.uid
           && request.resource.data.participante == get(/databases/$(database)/documents/salas/$(roomId)/participantes/$(request.auth.uid)).data.nome
           && request.resource.data.texto is string
           && request.resource.data.texto.size() >= 1
           && request.resource.data.texto.size() <= 1500
+          && (!request.resource.data.keys().hasAny(['textoOriginal']) || (request.resource.data.textoOriginal is string && request.resource.data.textoOriginal.size() <= 1500))
+          && (!request.resource.data.keys().hasAny(['ajustadoPorIA']) || request.resource.data.ajustadoPorIA is bool)
           && request.resource.data.criadoEm == request.time;
 
         allow update, delete: if false;
